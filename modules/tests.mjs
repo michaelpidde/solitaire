@@ -89,7 +89,7 @@ const runTests = () => {
             ++testsRan;
             Tests[test]();
         });
-        console.log('Tests: ' + testsRan + ', Assertions: ' + totalAssertions + ', Failed: ' + failedAssertions);
+        console.log(`Tests: ${testsRan}, Assertions: ${totalAssertions}, Failed: ${failedAssertions}`);
         console.log('Done.');
     }
 }
