@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<head>
+    <title>Solitaire</title>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Verdana, sans-serif;
+            color: #fff;
+        }
+        div {
+            box-sizing: border-box;
+        }
+        #board {
+            position: relative;
+            width: 800px;
+            height: 500px;
+            margin: 20px auto;
+            padding: 15px;
+            border: 3px solid rgb(232, 208, 33);
+            border-radius: 10px;
+            background: rgb(2,0,36);
+            background: linear-gradient(0deg, rgba(2,0,36,1) 0%, rgba(1,69,29,1) 44%, rgba(15,189,101,1) 100%);
+        }
+        #moves {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
+        #deck {
+            position: absolute;
+            top: 15px;
+            right: 130px;
+        }
+        .facecard, .cardback, .pile {
+            border-radius: 10px;
+            width: 60px;
+            height: 90px;
+        }
+        .pile {
+            float: left;
+            border: 5px solid #fff;
+            margin-right: 15px;
+            background: rgb(200, 250, 200);
+        }
+        .facecard {
+            border: 2px solid #000;
+        }
+        .cardback {
+            border: 5px solid #fff;
+            /* http://www.patternify.com/ */
+            background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQElEQVQYlWP4/////9tpvP9xAZgcA7KiF87OWNm303j/M2CTwCbGgE03NlvgJqK7Fd3dpCkkyWqCniEpeIgJcACTRmDc0Z9RYAAAAABJRU5ErkJggg==) repeat;
+        }
+    </style>
+    <body>
+        <div id="root"></div>
+    </body>
+    <script type="module" src="index.js"></script>
+</head>
