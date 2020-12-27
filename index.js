@@ -6,23 +6,54 @@ import runTests from './modules/tests.mjs';
 const drawCard = () => {
     incrementMoves();
     [deck, drawnCards] = Deck.draw(deck, drawnCards);
+    updateDrawnCards();
+
     if(deck.length == 0) {
         const deck = document.getElementById(elements.deck);
         deck.className = 'reset';
         deck.onclick = resetDeck;
     }
-    if(drawnCards.length > 3) {
-        // Shift cards in play stack (render bottom 3 cards)
-    }
-    // Set position and display based on drawnCards
+}
+
+const updateDrawnCards = () => {
     const container = document.getElementById(elements.board);
-    drawnCards[drawnCards.length - 1].position.y = 15;
-    drawnCards[drawnCards.length - 1].position.x = container.clientWidth - 350;
-    drawnCards[drawnCards.length - 1].face = true;
+    const topOffset = 15;
+    const leftOffset = container.clientWidth - 355;
+    const offsetBetweenCards = 62;
+    let card = null;
+    drawnCards.reverse();
+    for(let i = 0; i <= 3; ++i) {
+        if(drawnCards.length - 1 >= i) {
+            drawnCards[i].position.x = leftOffset - (offsetBetweenCards * i);
+            drawnCards[i].position.y = topOffset;
+            drawnCards[i].face = true;
+
+            card = document.getElementById(Deck.cardId(drawnCards[i]));
+            card.style.top = drawnCards[i].position.y + 'px';
+            card.style.left = drawnCards[i].position.x + 'px';
+            card.className = Deck.cardClass(drawnCards[i]);
+            card.style.zIndex = 10 - i;
+            card.style.display = 'block';
+            
+            if(i == 3) {
+                card.style.display = 'none';
+            }
+        }
+    }
+    drawnCards.reverse();
+
     // Somehow reference active drawn card so it has a click handler that works and the others do not
 }
 
 const resetDeck = () => {
+    let card = null;
+    let cardElement = null;
+    for(let i = 0; i <= 2; ++i) {
+        card = drawnCards[drawnCards.length - (1 + i)];
+        cardElement = document.getElementById(Deck.cardId(card));
+        cardElement.style.display = 'none';
+    }
+
     deck = JSON.parse(JSON.stringify(drawnCards));
     drawnCards = [];
     const deckElement = document.getElementById(elements.deck);
@@ -45,6 +76,8 @@ const startGame = () => {
     deck.map(card => DOM.addCardToDOM(card, elements.board));
     shuffle(deck);
     [deck, stacks] = Deck.deal(deck, stacks);
+    // Render faces for remaining deck cards
+    deck.map(card => DOM.createFace(card, suits));
     stacks.map(stack => DOM.zIndexStack(stack));
     DOM.updateMoves(elements.moves, movesLiteral, totalMoves);
 
