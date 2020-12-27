@@ -1,22 +1,23 @@
-export const remove = (deck, destination, start, number) => {
-    destination = deck.slice(start, number);
-    deck.splice(start, number);
-    return [deck, destination];
+export const draw = (deck, drawnCards) => {
+    drawnCards.push(deck.slice(0, 1)[0]);
+    deck.splice(0, 1);
+    return [deck, drawnCards];
 }
 
 export const deal = (deck, stacks) => {
     for(let i = 0; i < 7; ++i) {
-        [deck, stacks[i]] = remove(deck, stacks[i], 0, i + 1);
+        stacks[i] = deck.slice(0, i + 1);
+        deck.splice(0, i + 1);
     }
     return [deck, stacks];
 }
 
 export const create = (deck, suits) => {
-    suits.map((suit) => {
+    for(let key in suits) {
         for(let i = 1; i <= 13; ++i) {
             deck.push({
                 face: false,
-                suit: suit,
+                suit: key,
                 number: i,
                 position: {
                     x: 0,
@@ -24,5 +25,8 @@ export const create = (deck, suits) => {
                 },
             });
         }
-    });
+    };
 }
+
+export const cardId = (card) => card.suit + '_' + card.number;
+export const cardClass = (card) => card.face ? 'card facecard ' + card.suit : 'card cardback';

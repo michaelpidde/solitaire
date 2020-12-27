@@ -33,27 +33,42 @@ var Tests = function() {
         };
     }
 
-    function test_removeFromDeck() {
-        let {deck, suits, stacks} = setUp();
-        Deck.create(deck, suits);
-        const firstCard = JSON.parse(JSON.stringify(deck[0]));
-        [deck, stacks[0]] = Deck.remove(deck, stacks[0], 0, 1);
-        assert(deck.length == 51, 'Deck should contain 51 cards');
-        assert(stacks[0].length == 1, 'First stack should contain 1 card');
-        assert(
-            stacks[0][0].suit == firstCard.suit && stacks[0][0].number == firstCard.number,
-            'Stack card should match removed card'
-        );
-    }
-
     function test_createDeckAndDeal() {
         let {deck, suits, stacks} = setUp();
         Deck.create(deck, suits);
+
         const deckLength = deck.length;
         assert(deckLength == 52, 'Deck should contain 52 cards');
+        
         [deck, stacks] = Deck.deal(deck, stacks);
         const dealt = Array.from(Array(7), (_, i) => ++i).reduce((a, b) => a + b);
         assert(deckLength == deck.length + dealt, 'Current deck length + dealt cards should total 52');
+    }
+
+    function test_cardId() {
+        const {deck, suits} = setUp();
+        Deck.create(deck, suits);
+        const card = deck[0];
+        assert(Deck.cardId(card) == card.suit + '_' + card.number, 'Card ID should be...correct');
+    }
+
+    function test_deckDraw() {
+        let {deck, suits} = setUp();
+        let drawnCards = [];
+        Deck.create(deck, suits);
+
+        const firstCard = JSON.parse(JSON.stringify(deck[0]));
+        [deck, drawnCards] = Deck.draw(deck, drawnCards);
+        assert(deck.length == 51, 'Deck should contain 51 cards after draw');
+        assert(firstCard.suit == drawnCards[0].suit && firstCard.number == drawnCards[0].number,
+            'First card from deck should match newest card in drawn pile');
+        
+            // Make sure second draw puts card in correct spot in drawnCards
+        const secondCard = JSON.parse(JSON.stringify(deck[0]));
+        [deck, drawnCards] = Deck.draw(deck, drawnCards);
+        assert(deck.length == 50, 'Deck should contain 50 cards after draw');
+        assert(secondCard.suit == drawnCards[1].suit && secondCard.number == drawnCards[1].number,
+            'Second card from deck should match newest card in drawn pile');
     }
 
     function test_compareArray() {
@@ -74,8 +89,9 @@ var Tests = function() {
 
     return {
         get: get,
-        test_removeFromDeck: test_removeFromDeck,
         test_createDeckAndDeal: test_createDeckAndDeal,
+        test_cardId: test_cardId,
+        test_deckDraw: test_deckDraw,
         test_compareArray: test_compareArray,
         test_shuffleArray: test_shuffleArray
     };

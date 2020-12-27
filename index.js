@@ -2,25 +2,28 @@ import { shuffle } from './modules/arrays.mjs'
 import * as Deck from './modules/deck.mjs';
 import runTests from './modules/tests.mjs';
 
-const renderCard = (suit, index, face) => {
-    console.log('renderCard');
+const addCardToDOM = (card) => {
     const root = document.getElementById(elements.board);
-    const card = create({
+    const cardElement = create({
         type: 'div',
-        id: suit + '_' + index,
-        className: face ? 'facecard ' + suit : 'cardback',
+        id: card.suit + '_' + card.number,
+        className: Deck.cardClass(card),
         style: {
+            display: 'none',
             position: 'absolute',
-            top: '100px',
-            left: '100px',
+            top: card.position.y + 'px',
+            left: card.position.x + 'px',
         }
     });
 
-    root.appendChild(card);
+    root.appendChild(cardElement);
 }
 
-const renderStack = (column) => {
-    //
+const zIndexStack = (stack) => {
+    let zindex = 0;
+    stack.map((card, zindex) => {
+        document.getElementById(Deck.cardId(card)).style.zIndex = zindex++;
+    });
 }
 
 const create = (attrs) => {
@@ -40,14 +43,14 @@ const renderBoard = (root) => {
     const board = create({type: 'div', id: elements.board});
     const moves = create({type: 'div', id: elements.moves, innerHTML: movesLiteral + totalMoves});
     const piles = create({type: 'div', id: elements.piles});
-    suits.map((suit) => {
+    for(let key in suits) {
         let pile = create({
             type: 'div',
-            id: 'pile_' + suit,
+            id: 'pile_' + suits[key].suit,
             className: 'pile'
         });
         piles.appendChild(pile);
-    });
+    };
 
     const deck = create({
         type: 'div',
@@ -64,12 +67,29 @@ const renderBoard = (root) => {
 
 const drawCard = () => {
     incrementMoves();
-    // Pop card off deck and put into drawnCards stack
-    // If deck is now empty, render reset cards button (empty card outline that has reset icon)
-    // If there are already 3 drawn cards, "shift" all of them (render bottom 3 of drawnCards stack)
-    // Set position based on drawnCards
+    [deck, drawnCards] = Deck.draw(deck, drawnCards);
+    if(deck.length == 0) {
+        const deck = document.getElementById(elements.deck);
+        deck.className = 'reset';
+        deck.onclick = resetDeck;
+    }
+    if(drawnCards.length > 3) {
+        // Shift cards in play stack (render bottom 3 cards)
+    }
+    // Set position and display based on drawnCards
+    const container = document.getElementById(elements.board);
+    drawnCards[drawnCards.length - 1].position.y = 15;
+    drawnCards[drawnCards.length - 1].position.x = container.clientWidth - 350;
+    drawnCards[drawnCards.length - 1].face = true;
     // Somehow reference active drawn card so it has a click handler that works and the others do not
-    renderCard(suits[1], 5, true);
+}
+
+const resetDeck = () => {
+    deck = JSON.parse(JSON.stringify(drawnCards));
+    drawnCards = [];
+    const deckElement = document.getElementById(elements.deck);
+    deckElement.className = 'cardback';
+    deckElement.onclick = drawCard;
 }
 
 const clickCard = (card) => {
@@ -81,10 +101,60 @@ const incrementMoves = () => {
     document.getElementById(elements.moves).innerHTML = movesLiteral + totalMoves;
 }
 
+const renderFace = (card) => {
+    const cardElement = document.getElementById(Deck.cardId(card));
+    const transformNumber = (number) => {
+        if(number == 1) { return 'A' }
+        if(number == 11) { return 'J' }
+        if(number == 12) { return 'Q' }
+        if(number == 13) { return 'K' }
+        return number;
+    }
+    const title = create({
+        type: 'div',
+        innerHTML: transformNumber(card.number) + '<span>' + card.suit.toUpperCase() + '</span>',
+        className: suits[card.suit] + ' title ' + card.suit
+    });
+    const image = create({
+        type: 'img',
+        width: 80,
+        height: 80,
+        src: 'images/' + card.suit + '.svg'
+    })
+    cardElement.appendChild(title);
+    cardElement.appendChild(image);
+}
+
 const startGame = () => {
     Deck.create(deck, suits);
+    deck.map(card => addCardToDOM(card));
     shuffle(deck);
     [deck, stacks] = Deck.deal(deck, stacks);
+    stacks.map(stack => zIndexStack(stack));
+
+    let stack = [];
+    let increment = 0;
+    let card = {};
+    let cardElement = null;
+    const leftOffset = 15;
+    for(let i = 0; i < stacks.length; ++i) {
+        increment = (110 + 15) * i; // card width + right margin
+        stack = stacks[i];
+        for(let j = 0; j < stack.length; ++j) {
+            card = stack[j];
+            card.position.x = increment + leftOffset;
+            card.position.y += j * 30;
+            if(j == stack.length - 1) {
+                card.face = true;
+                renderFace(card);
+            }
+            cardElement = document.getElementById(Deck.cardId(stack[j]));
+            cardElement.className = Deck.cardClass(card);
+            cardElement.style.top = card.position.y + 200 + 'px';
+            cardElement.style.left = card.position.x + 'px';
+            cardElement.style.display = 'block';
+        }
+    }
 }
 
 let deck = [];
@@ -97,8 +167,14 @@ const elements = {
     moves: 'moves',
     piles: 'piles',
     deck: 'deck',
+    stacks: 'stacks',
 };
-const suits = ['staffs', 'swords', 'shields', 'towers'];
+const suits = {
+    staffs: 'light',
+    swords: 'dark',
+    shields: 'light',
+    towers: 'dark'
+};
 
 window.onload = () => {
     runTests();
