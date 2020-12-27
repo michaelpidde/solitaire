@@ -39,6 +39,34 @@ div {
     border: 1px solid #000;
     margin-right: 15px;
 }
+.pile {
+    -webkit-filter: grayscale(1);
+    filter: grayscale(1);
+}
+#pile_staves {
+    background: url("images/staves.svg");
+    background-size: 40px 40px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+#pile_swords {
+    background: url("images/swords.svg");
+    background-size: 40px 40px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+#pile_towers {
+    background: url("images/towers.svg");
+    background-size: 40px 40px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+#pile_shields {
+    background: url("images/shields.svg");
+    background-size: 40px 40px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
 .facecard {
     border: 5px solid #fff;
     background: rgb(244, 236, 206);;

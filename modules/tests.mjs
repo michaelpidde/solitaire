@@ -52,6 +52,23 @@ var Tests = function() {
         assert(Deck.cardId(card) == card.suit + '_' + card.number, 'Card ID should be...correct');
     }
 
+    function test_transformNumber() {
+        const result = Array.from(Array(13), (_, i) => ++i)
+            .map(i => i = Deck.transformNumber(i));
+        assert(result.join('') == 'A2345678910JQK', 'Transformed card numbers should represent correct courts')
+    }
+
+    function test_cardClass() {
+        const card = {
+            suit: 'Beezneez',
+            number: 6,
+            face: false,
+        };
+        assert(Deck.cardClass(card) == 'card cardback', 'Card class should match expected card back class');
+        card.face = true;
+        assert(Deck.cardClass(card) == 'card facecard Beezneez', 'Card class should match expected face card class');
+    }
+
     function test_deckDraw() {
         let {deck, suits} = setUp();
         let drawnCards = [];
@@ -90,7 +107,9 @@ var Tests = function() {
     return {
         get: get,
         test_createDeckAndDeal: test_createDeckAndDeal,
+        test_transformNumber: test_transformNumber,
         test_cardId: test_cardId,
+        test_cardClass: test_cardClass,
         test_deckDraw: test_deckDraw,
         test_compareArray: test_compareArray,
         test_shuffleArray: test_shuffleArray
@@ -103,6 +122,7 @@ const runTests = () => {
         console.log('Running tests...');
         tests.forEach((test) => {
             ++testsRan;
+            console.log('\t' + test);
             Tests[test]();
         });
         console.log(`Tests: ${testsRan}, Assertions: ${totalAssertions}, Failed: ${failedAssertions}`);

@@ -45,8 +45,9 @@ export const createBoard = (elements, suits, drawCardEvent) => {
     for(let key in suits) {
         let pile = create({
             type: 'div',
-            id: 'pile_' + suits[key].suit,
-            className: 'pile'
+            id: 'pile_' + key,
+            className: 'pile',
+            innerHTML: '<img>',
         });
         piles.appendChild(pile);
     };
