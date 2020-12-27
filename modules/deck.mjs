@@ -28,5 +28,13 @@ export const create = (deck, suits) => {
     };
 }
 
+export const transformNumber = (number) => {
+    if(number == 1) { return 'A' }
+    if(number == 11) { return 'J' }
+    if(number == 12) { return 'Q' }
+    if(number == 13) { return 'K' }
+    return number;
+}
+
 export const cardId = (card) => card.suit + '_' + card.number;
 export const cardClass = (card) => card.face ? 'card facecard ' + card.suit : 'card cardback';

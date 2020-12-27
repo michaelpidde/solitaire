@@ -1,69 +1,7 @@
 import { shuffle } from './modules/arrays.mjs'
 import * as Deck from './modules/deck.mjs';
+import * as DOM from './modules/dom.mjs';
 import runTests from './modules/tests.mjs';
-
-const addCardToDOM = (card) => {
-    const root = document.getElementById(elements.board);
-    const cardElement = create({
-        type: 'div',
-        id: card.suit + '_' + card.number,
-        className: Deck.cardClass(card),
-        style: {
-            display: 'none',
-            position: 'absolute',
-            top: card.position.y + 'px',
-            left: card.position.x + 'px',
-        }
-    });
-
-    root.appendChild(cardElement);
-}
-
-const zIndexStack = (stack) => {
-    let zindex = 0;
-    stack.map((card, zindex) => {
-        document.getElementById(Deck.cardId(card)).style.zIndex = zindex++;
-    });
-}
-
-const create = (attrs) => {
-    if(attrs.type == undefined) {
-        console.error('Must supply type');
-        return;
-    }
-    const element = document.createElement(attrs.type);
-    Object.assign(element, attrs);
-    if(attrs.style != undefined) {
-        Object.assign(element.style, attrs.style);
-    }
-    return element;
-}
-
-const renderBoard = (root) => {
-    const board = create({type: 'div', id: elements.board});
-    const moves = create({type: 'div', id: elements.moves, innerHTML: movesLiteral + totalMoves});
-    const piles = create({type: 'div', id: elements.piles});
-    for(let key in suits) {
-        let pile = create({
-            type: 'div',
-            id: 'pile_' + suits[key].suit,
-            className: 'pile'
-        });
-        piles.appendChild(pile);
-    };
-
-    const deck = create({
-        type: 'div',
-        id: elements.deck,
-        className: 'cardback',
-        onclick: drawCard,
-    });
-    
-    board.appendChild(deck);
-    board.appendChild(piles);
-    board.appendChild(moves);
-    root.appendChild(board);
-}
 
 const drawCard = () => {
     incrementMoves();
@@ -98,39 +36,17 @@ const clickCard = (card) => {
 
 const incrementMoves = () => {
     ++totalMoves;
-    document.getElementById(elements.moves).innerHTML = movesLiteral + totalMoves;
-}
-
-const renderFace = (card) => {
-    const cardElement = document.getElementById(Deck.cardId(card));
-    const transformNumber = (number) => {
-        if(number == 1) { return 'A' }
-        if(number == 11) { return 'J' }
-        if(number == 12) { return 'Q' }
-        if(number == 13) { return 'K' }
-        return number;
-    }
-    const title = create({
-        type: 'div',
-        innerHTML: transformNumber(card.number) + '<span>' + card.suit.toUpperCase() + '</span>',
-        className: suits[card.suit] + ' title ' + card.suit
-    });
-    const image = create({
-        type: 'img',
-        width: 80,
-        height: 80,
-        src: 'images/' + card.suit + '.svg'
-    })
-    cardElement.appendChild(title);
-    cardElement.appendChild(image);
+    DOM.updateMoves(elements.moves, movesLiteral, totalMoves);
 }
 
 const startGame = () => {
+    DOM.createBoard(elements, suits, drawCard);
     Deck.create(deck, suits);
-    deck.map(card => addCardToDOM(card));
+    deck.map(card => DOM.addCardToDOM(card, elements.board));
     shuffle(deck);
     [deck, stacks] = Deck.deal(deck, stacks);
-    stacks.map(stack => zIndexStack(stack));
+    stacks.map(stack => DOM.zIndexStack(stack));
+    DOM.updateMoves(elements.moves, movesLiteral, totalMoves);
 
     let stack = [];
     let increment = 0;
@@ -146,7 +62,7 @@ const startGame = () => {
             card.position.y += j * 30;
             if(j == stack.length - 1) {
                 card.face = true;
-                renderFace(card);
+                DOM.createFace(card, suits);
             }
             cardElement = document.getElementById(Deck.cardId(stack[j]));
             cardElement.className = Deck.cardClass(card);
@@ -163,6 +79,7 @@ let stacks = Array(7).fill([]);
 let totalMoves = 0;
 let movesLiteral = 'Moves: ';
 const elements = {
+    root: 'root',
     board: 'board',
     moves: 'moves',
     piles: 'piles',
@@ -178,6 +95,5 @@ const suits = {
 
 window.onload = () => {
     runTests();
-    renderBoard(document.getElementById('root'));
     startGame();
 }
