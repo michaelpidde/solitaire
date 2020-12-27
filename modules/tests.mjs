@@ -29,7 +29,7 @@ var Tests = function() {
         return {
             deck: [],
             stacks: Array(7).fill([]),
-            suits: ['staffs', 'swords', 'shields', 'towers'],
+            suits: ['staves', 'swords', 'shields', 'towers'],
         };
     }
 

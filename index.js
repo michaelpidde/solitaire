@@ -87,7 +87,7 @@ const elements = {
     stacks: 'stacks',
 };
 const suits = {
-    staffs: 'light',
+    staves: 'light',
     swords: 'dark',
     shields: 'light',
     towers: 'dark'
