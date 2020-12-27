@@ -122,8 +122,8 @@ const elements = {
 const suits = {
     staves: 'light',
     swords: 'dark',
-    shields: 'light',
-    towers: 'dark'
+    shields: 'dark',
+    towers: 'light'
 };
 
 window.onload = () => {
