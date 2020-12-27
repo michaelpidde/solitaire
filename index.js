@@ -6,43 +6,13 @@ import runTests from './modules/tests.mjs';
 const drawCard = () => {
     incrementMoves();
     [deck, drawnCards] = Deck.draw(deck, drawnCards);
-    updateDrawnCards();
+    DOM.updateDrawnCards(drawnCards, elements, clickCard);
 
     if(deck.length == 0) {
         const deck = document.getElementById(elements.deck);
         deck.className = 'reset';
         deck.onclick = resetDeck;
     }
-}
-
-const updateDrawnCards = () => {
-    const container = document.getElementById(elements.board);
-    const topOffset = 15;
-    const leftOffset = container.clientWidth - 355;
-    const offsetBetweenCards = 62;
-    let card = null;
-    drawnCards.reverse();
-    for(let i = 0; i <= 3; ++i) {
-        if(drawnCards.length - 1 >= i) {
-            drawnCards[i].position.x = leftOffset - (offsetBetweenCards * i);
-            drawnCards[i].position.y = topOffset;
-            drawnCards[i].face = true;
-
-            card = document.getElementById(Deck.cardId(drawnCards[i]));
-            card.style.top = drawnCards[i].position.y + 'px';
-            card.style.left = drawnCards[i].position.x + 'px';
-            card.className = Deck.cardClass(drawnCards[i]);
-            card.style.zIndex = 10 - i;
-            card.style.display = 'block';
-            
-            if(i == 3) {
-                card.style.display = 'none';
-            }
-        }
-    }
-    drawnCards.reverse();
-
-    // Somehow reference active drawn card so it has a click handler that works and the others do not
 }
 
 const resetDeck = () => {
@@ -61,8 +31,23 @@ const resetDeck = () => {
     deckElement.onclick = drawCard;
 }
 
-const clickCard = (card) => {
-    //
+const clickCard = (event) => {
+    const cardId = (event.target.offsetParent.id == elements.board) ?
+        event.target.id : event.target.offsetParent.id;
+    let {suit, number} = Deck.cardFromId(cardId);
+    const pile = piles[suit];
+    const card = null; // ?? Is it in the deck, drawnCards, or in a stack, or in a pile?
+    
+    // Move card to pile if possible
+    if(piles[suit].length == number - 1) {
+        const pileElement = document.getElementById(elements.piles[suit]);
+
+    }
+
+    // Else move card to leftmost valid stack, re-zindex
+    // If moved:
+    // - increase moves
+    // - flip next card in stack if there are more 
 }
 
 const incrementMoves = () => {
@@ -70,30 +55,25 @@ const incrementMoves = () => {
     DOM.updateMoves(elements.moves, movesLiteral, totalMoves);
 }
 
-const startGame = () => {
-    DOM.createBoard(elements, suits, drawCard);
-    Deck.create(deck, suits);
-    deck.map(card => DOM.addCardToDOM(card, elements.board));
-    shuffle(deck);
-    [deck, stacks] = Deck.deal(deck, stacks);
-    // Render faces for remaining deck cards
-    deck.map(card => DOM.createFace(card, suits));
-    stacks.map(stack => DOM.zIndexStack(stack));
-    DOM.updateMoves(elements.moves, movesLiteral, totalMoves);
-
+const renderStacks = () => {
     let stack = [];
     let increment = 0;
     let card = {};
     let cardElement = null;
+    let lastCard = false;
     const leftOffset = 15;
     for(let i = 0; i < stacks.length; ++i) {
+        lastCard = false;
         increment = (110 + 15) * i; // card width + right margin
         stack = stacks[i];
         for(let j = 0; j < stack.length; ++j) {
+            if(j == stack.length - 1) {
+                lastCard = true;
+            }
             card = stack[j];
             card.position.x = increment + leftOffset;
             card.position.y += j * 30;
-            if(j == stack.length - 1) {
+            if(lastCard) {
                 card.face = true;
                 DOM.createFace(card, suits);
             }
@@ -102,13 +82,35 @@ const startGame = () => {
             cardElement.style.top = card.position.y + 200 + 'px';
             cardElement.style.left = card.position.x + 'px';
             cardElement.style.display = 'block';
+            if(lastCard) {
+                cardElement.onclick = clickCard;
+            }
         }
     }
 }
 
+const startGame = () => {
+    DOM.createBoard(elements, suits, drawCard);
+    DOM.updateMoves(elements.moves, movesLiteral, totalMoves);
+    Deck.create(deck, suits);
+    deck.map(card => DOM.addCardToDOM(card, elements.board));
+    shuffle(deck);
+    [deck, stacks] = Deck.deal(deck, stacks);
+    // Render faces for remaining deck cards
+    deck.map(card => DOM.createFace(card, suits));
+    stacks.map(stack => DOM.zIndexStack(stack));
+    renderStacks();
+}
+
 let deck = [];
 let drawnCards = [];
-let stacks = Array(7).fill([]);
+let piles = {
+    staves: [],
+    swords: [],
+    shields: [],
+    towers: [],
+}
+let stacks = Array(4).fill([]);
 let totalMoves = 0;
 let movesLiteral = 'Moves: ';
 const elements = {
@@ -118,6 +120,12 @@ const elements = {
     piles: 'piles',
     deck: 'deck',
     stacks: 'stacks',
+    piles: {
+        staves: 'pile_staves',
+        swords: 'pile_swords',
+        shields: 'pile_shields',
+        towers: 'pile_towers',
+    }
 };
 const suits = {
     staves: 'light',

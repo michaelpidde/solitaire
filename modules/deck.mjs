@@ -37,4 +37,10 @@ export const transformNumber = (number) => {
 }
 
 export const cardId = (card) => card.suit + '_' + card.number;
+export const cardFromId = (id) => {
+    return {
+        suit: id.split('_')[0],
+        number: id.split('_')[1]
+    };
+}
 export const cardClass = (card) => card.face ? 'card facecard ' + card.suit : 'card cardback';

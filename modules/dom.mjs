@@ -24,6 +24,42 @@ export const zIndexStack = (stack) => {
     });
 }
 
+export const updateDrawnCards = (drawnCards, elements, cardClickEvent) => {
+    const container = document.getElementById(elements.board);
+    const topOffset = 15;
+    const leftOffset = container.clientWidth - 355; // Arbitrary number for alignment
+    const offsetBetweenCards = 62; // Arbitrary number for alignment
+    let card = null;
+    drawnCards.reverse();
+    for(let i = 0; i <= 3; ++i) {
+        if(drawnCards.length - 1 >= i) {
+            drawnCards[i].position.x = leftOffset - (offsetBetweenCards * i);
+            drawnCards[i].position.y = topOffset;
+            drawnCards[i].face = true;
+
+            card = document.getElementById(cardId(drawnCards[i]));
+            card.style.top = drawnCards[i].position.y + 'px';
+            card.style.left = drawnCards[i].position.x + 'px';
+            card.className = cardClass(drawnCards[i]);
+            card.style.zIndex = 10 - i;
+            card.style.display = 'block';
+
+            if(i == 0) {
+                card.onclick = cardClickEvent;
+            } else {
+                card.onclick = null;
+            }
+
+            if(i == 3) {
+                card.style.display = 'none';
+            }
+        }
+    }
+    drawnCards.reverse();
+
+    // Somehow reference active drawn card so it has a click handler that works and the others do not
+}
+
 export const create = (attrs) => {
     if(attrs.type == undefined) {
         console.error('Must supply type');
@@ -45,7 +81,7 @@ export const createBoard = (elements, suits, drawCardEvent) => {
     for(let key in suits) {
         let pile = create({
             type: 'div',
-            id: 'pile_' + key,
+            id: elements.piles[key],
             className: 'pile',
             innerHTML: '<img>',
         });
