@@ -1,7 +1,7 @@
 export const shuffle = (array) => {
     const total = array.length;
     let random = 0;
-    let temp = {};
+    let temp = '';
     for(let i = 0; i < total; ++i) {
         // This will get a random number with the lower bound being iteratively higher. That is,
         // 0 - 51 the first time, then 1 - 51, 2 - 51, etc.

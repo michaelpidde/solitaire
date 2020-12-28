@@ -76,6 +76,9 @@ div {
     /* http://www.patternify.com/ */
     background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAQElEQVQYlWP4/////9tpvP9xAZgcA7KiF87OWNm303j/M2CTwCbGgE03NlvgJqK7Fd3dpCkkyWqCniEpeIgJcACTRmDc0Z9RYAAAAABJRU5ErkJggg==) repeat;
 }
+.cardback * {
+    display: none;
+}
 .reset {
     border: 1px solid #000;
     background: url("images/reload.svg") center center no-repeat;

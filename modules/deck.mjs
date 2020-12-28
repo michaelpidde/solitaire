@@ -9,22 +9,28 @@ export const deal = (deck, stacks) => {
         stacks[i] = deck.slice(0, i + 1);
         deck.splice(0, i + 1);
     }
-    return [deck, stacks];
 }
 
-export const create = (deck, suits) => {
+export const initializeCards = (cards, suits) => {
     for(let key in suits) {
         for(let i = 1; i <= 13; ++i) {
-            deck.push({
+            cards[key + '_' + i] = {
                 face: false,
                 suit: key,
                 number: i,
+                visible: false,
                 position: {
                     x: 0,
                     y: 0
                 },
-            });
+            };
         }
+    };
+}
+
+export const addCards = (deck, cards) => {
+    for(let card in cards) {
+        deck.push(cardId(cards[card]));
     };
 }
 

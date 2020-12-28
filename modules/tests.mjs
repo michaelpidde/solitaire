@@ -27,28 +27,48 @@ var Tests = function() {
 
     function setUp() {
         return {
-            deck: [],
-            stacks: Array(7).fill([]),
-            suits: ['staves', 'swords', 'shields', 'towers'],
+            state: {
+                cards: {},
+                deck: [],
+                drawnCards: [],
+                stacks: Array(7).fill([]),
+            },
+            suits: {
+                staves: 'light',
+                swords: 'dark',
+                shields: 'dark',
+                towers: 'light'
+            },
         };
     }
 
-    function test_createDeckAndDeal() {
-        let {deck, suits, stacks} = setUp();
-        Deck.create(deck, suits);
+    function createDeck() {
+        const {state, suits} = setUp();
+        Deck.initializeCards(state.cards, suits);
+        Deck.addCards(state.deck, state.cards);
+        return state;
+    }
 
-        const deckLength = deck.length;
+    function test_createDeckAndDeal() {
+        let {state, suits} = setUp();
+        Deck.initializeCards(state.cards, suits);
+        const cardsLength = Object.keys(state.cards).length;
+        assert(cardsLength == 52, 'There should be 52 cards in state');
+
+        Deck.addCards(state.deck, state.cards);
+        const deckLength = state.deck.length;
         assert(deckLength == 52, 'Deck should contain 52 cards');
         
-        [deck, stacks] = Deck.deal(deck, stacks);
+        Deck.deal(state.deck, state.stacks);
         const dealt = Array.from(Array(7), (_, i) => ++i).reduce((a, b) => a + b);
-        assert(deckLength == deck.length + dealt, 'Current deck length + dealt cards should total 52');
+        assert(deckLength == state.deck.length + dealt, 'Current deck length + dealt cards should total 52');
     }
 
     function test_cardId() {
-        const {deck, suits} = setUp();
-        Deck.create(deck, suits);
-        const card = deck[0];
+        const {state, suits} = setUp();
+        Deck.initializeCards(state.cards, suits);
+        Deck.addCards(state.deck, state.cards);
+        const card = state.deck[0];
         assert(Deck.cardId(card) == card.suit + '_' + card.number, 'Card ID should be...correct');
     }
 
@@ -70,21 +90,19 @@ var Tests = function() {
     }
 
     function test_deckDraw() {
-        let {deck, suits} = setUp();
-        let drawnCards = [];
-        Deck.create(deck, suits);
+        const state = createDeck();
 
-        const firstCard = JSON.parse(JSON.stringify(deck[0]));
-        [deck, drawnCards] = Deck.draw(deck, drawnCards);
-        assert(deck.length == 51, 'Deck should contain 51 cards after draw');
-        assert(firstCard.suit == drawnCards[0].suit && firstCard.number == drawnCards[0].number,
+        const firstCard = state.deck[0];
+        Deck.draw(state.deck, state.drawnCards);
+        assert(state.deck.length == 51, 'Deck should contain 51 cards after draw');
+        assert(firstCard.suit == state.drawnCards[0].suit && firstCard.number == state.drawnCards[0].number,
             'First card from deck should match newest card in drawn pile');
         
             // Make sure second draw puts card in correct spot in drawnCards
-        const secondCard = JSON.parse(JSON.stringify(deck[0]));
-        [deck, drawnCards] = Deck.draw(deck, drawnCards);
-        assert(deck.length == 50, 'Deck should contain 50 cards after draw');
-        assert(secondCard.suit == drawnCards[1].suit && secondCard.number == drawnCards[1].number,
+        const secondCard = state.deck[0];
+        Deck.draw(state.deck, state.drawnCards);
+        assert(state.deck.length == 50, 'Deck should contain 50 cards after draw');
+        assert(secondCard.suit == state.drawnCards[1].suit && secondCard.number == state.drawnCards[1].number,
             'Second card from deck should match newest card in drawn pile');
     }
 
@@ -107,8 +125,8 @@ var Tests = function() {
     return {
         get: get,
         test_createDeckAndDeal: test_createDeckAndDeal,
-        test_transformNumber: test_transformNumber,
         test_cardId: test_cardId,
+        test_transformNumber: test_transformNumber,
         test_cardClass: test_cardClass,
         test_deckDraw: test_deckDraw,
         test_compareArray: test_compareArray,

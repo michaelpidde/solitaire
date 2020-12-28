@@ -5,13 +5,13 @@ import runTests from './modules/tests.mjs';
 
 const drawCard = () => {
     incrementMoves();
-    [deck, drawnCards] = Deck.draw(deck, drawnCards);
-    DOM.updateDrawnCards(drawnCards, elements, clickCard);
+    [state.deck, state.drawnCards] = Deck.draw(state.deck, state.drawnCards);
+    DOM.updateDrawnCards(state.cards, state.drawnCards, elements, clickCard);
 
-    if(deck.length == 0) {
-        const deck = document.getElementById(elements.deck);
-        deck.className = 'reset';
-        deck.onclick = resetDeck;
+    if(state.deck.length == 0) {
+        const deckElement = document.getElementById(elements.deck);
+        deckElement.className = 'reset';
+        deckElement.onclick = resetDeck;
     }
 }
 
@@ -19,13 +19,13 @@ const resetDeck = () => {
     let card = null;
     let cardElement = null;
     for(let i = 0; i <= 2; ++i) {
-        card = drawnCards[drawnCards.length - (1 + i)];
-        cardElement = document.getElementById(Deck.cardId(card));
+        card = state.drawnCards[state.drawnCards.length - (1 + i)];
+        cardElement = document.getElementById(card);
         cardElement.style.display = 'none';
     }
 
-    deck = JSON.parse(JSON.stringify(drawnCards));
-    drawnCards = [];
+    state.deck = state.drawnCards;
+    state.drawnCards = [];
     const deckElement = document.getElementById(elements.deck);
     deckElement.className = 'cardback';
     deckElement.onclick = drawCard;
@@ -35,11 +35,11 @@ const clickCard = (event) => {
     const cardId = (event.target.offsetParent.id == elements.board) ?
         event.target.id : event.target.offsetParent.id;
     let {suit, number} = Deck.cardFromId(cardId);
-    const pile = piles[suit];
+    const pile = state.piles[suit];
     const card = null; // ?? Is it in the deck, drawnCards, or in a stack, or in a pile?
     
     // Move card to pile if possible
-    if(piles[suit].length == number - 1) {
+    if(state.piles[suit].length == number - 1) {
         const pileElement = document.getElementById(elements.piles[suit]);
 
     }
@@ -51,8 +51,8 @@ const clickCard = (event) => {
 }
 
 const incrementMoves = () => {
-    ++totalMoves;
-    DOM.updateMoves(elements.moves, movesLiteral, totalMoves);
+    ++state.totalMoves;
+    DOM.updateMoves(elements.moves, state.totalMoves);
 }
 
 const renderStacks = () => {
@@ -62,22 +62,21 @@ const renderStacks = () => {
     let cardElement = null;
     let lastCard = false;
     const leftOffset = 15;
-    for(let i = 0; i < stacks.length; ++i) {
+    for(let i = 0; i < state.stacks.length; ++i) {
         lastCard = false;
         increment = (110 + 15) * i; // card width + right margin
-        stack = stacks[i];
+        stack = state.stacks[i];
         for(let j = 0; j < stack.length; ++j) {
             if(j == stack.length - 1) {
                 lastCard = true;
             }
-            card = stack[j];
+            card = state.cards[stack[j]];
             card.position.x = increment + leftOffset;
             card.position.y += j * 30;
             if(lastCard) {
                 card.face = true;
-                DOM.createFace(card, suits);
             }
-            cardElement = document.getElementById(Deck.cardId(stack[j]));
+            cardElement = document.getElementById(stack[j]);
             cardElement.className = Deck.cardClass(card);
             cardElement.style.top = card.position.y + 200 + 'px';
             cardElement.style.left = card.position.x + 'px';
@@ -91,28 +90,17 @@ const renderStacks = () => {
 
 const startGame = () => {
     DOM.createBoard(elements, suits, drawCard);
-    DOM.updateMoves(elements.moves, movesLiteral, totalMoves);
-    Deck.create(deck, suits);
-    deck.map(card => DOM.addCardToDOM(card, elements.board));
-    shuffle(deck);
-    [deck, stacks] = Deck.deal(deck, stacks);
-    // Render faces for remaining deck cards
-    deck.map(card => DOM.createFace(card, suits));
-    stacks.map(stack => DOM.zIndexStack(stack));
+    DOM.updateMoves(elements.moves, state.totalMoves);
+    Deck.initializeCards(state.cards, suits);
+    Deck.addCards(state.deck, state.cards);
+    DOM.addCards(state.cards, elements.board);
+    DOM.addCardFaces(state.cards, suits);
+    shuffle(state.deck);
+    Deck.deal(state.deck, state.stacks);
+    state.stacks.map(stack => DOM.zIndexStack(stack));
     renderStacks();
 }
 
-let deck = [];
-let drawnCards = [];
-let piles = {
-    staves: [],
-    swords: [],
-    shields: [],
-    towers: [],
-}
-let stacks = Array(4).fill([]);
-let totalMoves = 0;
-let movesLiteral = 'Moves: ';
 const elements = {
     root: 'root',
     board: 'board',
@@ -120,7 +108,7 @@ const elements = {
     piles: 'piles',
     deck: 'deck',
     stacks: 'stacks',
-    piles: {
+    pile: {
         staves: 'pile_staves',
         swords: 'pile_swords',
         shields: 'pile_shields',
@@ -132,6 +120,20 @@ const suits = {
     swords: 'dark',
     shields: 'dark',
     towers: 'light'
+};
+
+const state = {
+    cards: {},
+    drawnCards: [],
+    deck: [],
+    piles: {
+        staves: [],
+        swords: [],
+        shields: [],
+        towers: [],
+    },
+    stacks: Array(7).fill([]),
+    totalMoves: 0,
 };
 
 window.onload = () => {
