@@ -19,14 +19,14 @@ export const addCards = (cards, board) => {
     };
 }
 
-export const zIndexStack = (stack) => {
+export const zIndexCollection = (collection) => {
     let zindex = 0;
-    stack.map((card, zindex) => {
+    collection.map((card, zindex) => {
         document.getElementById(card).style.zIndex = zindex++;
     });
 }
 
-export const updateDrawnCards = (cards, drawnCards, elements, cardClickEvent) => {
+export const updateDrawnCards = (cards, drawnCards, visibleDrawnCards, elements, cardClickEvent) => {
     const container = document.getElementById(elements.board);
     const topOffset = 15;
     const leftOffset = container.clientWidth - 355; // Arbitrary number for alignment
@@ -34,7 +34,7 @@ export const updateDrawnCards = (cards, drawnCards, elements, cardClickEvent) =>
     let cardElement = null;
     let card = null;
     drawnCards.reverse();
-    for(let i = 0; i <= 3; ++i) {
+    for(let i = 0; i <= visibleDrawnCards; ++i) {
         if(drawnCards.length - 1 >= i) {
             card = cards[drawnCards[i]];
             card.position.x = leftOffset - (offsetBetweenCards * i);
@@ -54,7 +54,7 @@ export const updateDrawnCards = (cards, drawnCards, elements, cardClickEvent) =>
                 cardElement.onclick = null;
             }
 
-            if(i == 3) {
+            if(i == visibleDrawnCards) {
                 cardElement.style.display = 'none';
             }
         }

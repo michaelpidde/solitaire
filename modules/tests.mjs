@@ -122,6 +122,16 @@ var Tests = function() {
         assert(!Arrays.scalarEqual(sortedArray, dupArray), 'Test arrays are equal after shuffle');
     }
 
+    function test_scalarFindParentArray() {
+        const array = [
+            ['val1', 'val2', 'val3'],
+            ['val4', 'val5', 'val6'],
+        ];
+        assert(Arrays.scalarFindParentArray(array, 'val2') == 0, 'Should return 0 (first child array index)');
+        assert(Arrays.scalarFindParentArray(array, 'val5') == 1, 'Should return 1 (second child array index)');
+        assert(Arrays.scalarFindParentArray(array, 'no') == -1, 'Should return -1 (invalid array index)');
+    }
+
     return {
         get: get,
         test_createDeckAndDeal: test_createDeckAndDeal,
@@ -130,7 +140,8 @@ var Tests = function() {
         test_cardClass: test_cardClass,
         test_deckDraw: test_deckDraw,
         test_compareArray: test_compareArray,
-        test_shuffleArray: test_shuffleArray
+        test_shuffleArray: test_shuffleArray,
+        test_scalarFindParentArray: test_scalarFindParentArray,
     };
 }();
 

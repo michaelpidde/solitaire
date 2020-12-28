@@ -1,0 +1,7 @@
+Test scenarios:
+
+- First card from deck is moved to drawnCards. It's an Ace, and is moved to pile.
+
+- At least 3 cards are in drawnCards (thus rendered). Two of the cards are moved to piles or stacks in succession.
+
+- All cards in drawnCards played.

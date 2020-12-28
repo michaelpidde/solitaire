@@ -24,3 +24,16 @@ export const scalarEqual = (arr1, arr2) => {
     }
     return true;
 }
+
+export const scalarFindParentArray = (array, value) => {
+    let index = -1;
+    for(let i = 0; i < array.length; ++i) {
+        for(let j = 0; j < array[i].length; ++j) {
+            if(array[i][j] == value) {
+                index = i;
+                break;
+            }
+        }
+    }
+    return index;
+}
