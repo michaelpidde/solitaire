@@ -1,3 +1,4 @@
 export default {
-    "runTests": true
+    "runTests": true,
+    "debug": true,
 }

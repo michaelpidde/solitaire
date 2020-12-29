@@ -1,6 +1,7 @@
 import { shuffle, scalarFindParentArray } from './modules/arrays.mjs'
 import * as Deck from './modules/deck.mjs';
 import * as DOM from './modules/dom.mjs';
+import showDebugUI from './modules/debug.mjs';
 import runTests from './modules/tests.mjs';
 
 const drawCard = () => {
@@ -35,7 +36,8 @@ const resetDeck = () => {
     deckElement.onclick = drawCard;
 }
 
-// TODO: This Godmode function can probably be split up into events per card location, or event type
+// TODO: This Godmode function can probably be split up into events per card location,
+// (event for card in stack, for card in deck, for card in pile) or into functions per event type
 // (i.e. promotion to pile vs. moving between stacks vs. moving from drawn cards to a stack)
 const clickCard = (event) => {
     const cardElement = (event.target.offsetParent.id == elements.board) ? event.target : event.target.offsetParent;
@@ -45,11 +47,47 @@ const clickCard = (event) => {
     
     const inDraw = state.drawnCards.indexOf(cardElement.id) > -1;
     const inStack = (inDraw) ? -1 : scalarFindParentArray(state.stacks, cardElement.id);
-    // TODO: Do we need this variable?
+    const stackPulledFrom = (inStack > -1) ? state.stacks[inStack] : null;
+    const positionInStack = (inStack > -1) ? state.stacks[inStack].indexOf(cardElement.id) : null;
+    // TODO: Do we need this variable? (Yes, probably, so we can change the state
+    // if we need to move a card out of the pile and back into a stack)
     const inPile = (inDraw || inStack > -1) ? false : true;
+
+    let moved = false;
+    let cardsMoved = 0;
+
+    const updateDrawnCards = () => {
+        const drawPosition = state.drawnCards.indexOf(cardElement.id);
+        state.drawnCards.splice(drawPosition, 1);
+        // Attach click event to prior drawn card (if there was one) so it can be played
+        if(drawPosition > 0) {
+            document.getElementById(state.drawnCards[drawPosition - 1]).onclick = clickCard;
+        }
+        // Re-render drawn cards
+        --state.visibleDrawnCards;
+        DOM.updateDrawnCards(state.cards, state.drawnCards, state.visibleDrawnCards, elements, clickCard);
+    }
+
+    const updateStack = (cardsMoved = 1) => {
+        stackPulledFrom.splice(stackPulledFrom.indexOf(cardElement.id), cardsMoved);
+
+        // Flip next card in stack
+        if(stackPulledFrom.length > 0) {
+            const nextCardId = stackPulledFrom[stackPulledFrom.length - 1];
+            const nextCard = state.cards[nextCardId];
+            const nextCardElement = document.getElementById(nextCardId);
+            nextCard.face = true;
+            nextCardElement.className = Deck.cardClass(card);
+            nextCardElement.onclick = clickCard;
+        }
+    }
     
     // Move card to pile if possible
     if(pile.length == number - 1) {
+        // Check if card is in middle of stack from whence it cannot be promoted
+        if(inStack > -1 && state.stacks[inStack].indexOf(cardElement.id) != state.stacks[inStack].length - 1) {
+            return;
+        }
         const pileElement = document.getElementById(elements.pile[suit]);
         card.position.x = pileElement.offsetLeft;
         card.position.y = pileElement.offsetTop;
@@ -58,36 +96,74 @@ const clickCard = (event) => {
 
         pile.push(cardElement.id);
         DOM.zIndexCollection(pile);
+        ++cardsMoved;
 
         if(inDraw) {
-            const drawPosition = state.drawnCards.indexOf(cardElement.id);
-            state.drawnCards.splice(drawPosition);
-            // Attach click event to prior drawn card (if there was one) so it can be played
-            if(drawPosition > 0) {
-                document.getElementById(state.drawnCards[drawPosition - 1]).onclick = clickCard;
-            }
-            // Re-render drawn cards
-            --state.visibleDrawnCards;
-            DOM.updateDrawnCards(state.cards, state.drawnCards, state.visibleDrawnCards, elements, clickCard);
+            updateDrawnCards();
         }
-        if(inStack > -1 && inStack == state.stacks[inStack].length - 1) {
-            state.stacks[inStack].splice(state.stacks[inStack].indexOf(cardElement.id));
-            // Flip next card in stack
-            if(state.stacks[inStack].length > 0) {
-                const nextCardId = state.stacks[inStack][state.stacks[inStack].length - 1];
-                const nextCard = state.cards[nextCardId];
-                const nextCardElement = document.getElementById(nextCardId);
-                nextCard.face = true;
-                nextCardElement.className = Deck.cardClass(card);
-                nextCardElement.onclick = clickCard;
+        if(inStack > -1) {
+            updateStack(cardsMoved);
+        }
+    } else {
+        // Move card to leftmost valid stack if possible
+        const cardColor = suits[card.suit];
+        let lastCard = null;
+        let lastCardId = null;
+        let lastCardSuit = null;
+        let stack = null;
+        for(let i = 0; i < state.stacks.length; ++i) {
+            stack = state.stacks[i];
+            if(stack.length > 0) {
+                lastCardId = stack[stack.length - 1];
+                lastCard = state.cards[lastCardId];
+                lastCardSuit = suits[state.cards[lastCardId].suit];
+                if(lastCardSuit != cardColor && lastCard.number == card.number + 1) {
+                    if(inStack > -1) {
+                        // Pull cards off bottom of stack. If the last card in stack was clicked,
+                        // this loop will only run once.
+                        for(let c = positionInStack; c < state.stacks[inStack].length; ++c) {
+                            stack.push(state.stacks[inStack][c]);
+                            ++cardsMoved;
+                        }
+                    } else {
+                        // Pull card off deck
+                        stack.push(cardElement.id);
+                        ++cardsMoved;
+                    }
+
+                    DOM.zIndexCollection(stack);
+                    renderStacks(i);
+                    if(inDraw) {
+                        updateDrawnCards();
+                    }
+                    if(inStack > -1) {
+                        updateStack(cardsMoved);
+                    }
+                    moved = true;
+                    break;
+                }
+            } else {
+                if(card.number == 13) {
+                    stack.push(cardElement.id);
+                    ++cardsMoved;
+                    DOM.zIndexCollection(stack);
+                    renderStacks(i);
+                    if(inDraw) {
+                        updateDrawnCards();
+                    }
+                    if(inStack > -1) {
+                        updateStack();
+                    }
+                    moved = true;
+                    break;
+                }
             }
         }
     }
 
-    // Else move card to leftmost valid stack, re-zindex
-    // If moved:
-    // - increase moves
-    // - flip next card in stack if there are more 
+    if(cardsMoved > 0) {
+        incrementMoves();
+    }
 }
 
 const incrementMoves = () => {
@@ -95,7 +171,7 @@ const incrementMoves = () => {
     DOM.updateMoves(elements.moves, state.totalMoves);
 }
 
-const renderStacks = () => {
+const renderStacks = (stackId = null) => {
     let stack = [];
     let increment = 0;
     let card = {};
@@ -103,25 +179,30 @@ const renderStacks = () => {
     let lastCard = false;
     const leftOffset = 15;
     for(let i = 0; i < state.stacks.length; ++i) {
+        if(stackId != null && i != stackId) {
+            continue;
+        }
         lastCard = false;
         increment = (110 + 15) * i; // card width + right margin
         stack = state.stacks[i];
         for(let j = 0; j < stack.length; ++j) {
-            if(j == stack.length - 1) {
-                lastCard = true;
-            }
             card = state.cards[stack[j]];
             card.position.x = increment + leftOffset;
-            card.position.y += j * 30;
-            if(lastCard) {
+            card.position.y = 200 + (j * 30); // Arbitrary numbers
+            if(j == stack.length - 1) {
+                // Last card should show face
                 card.face = true;
             }
             cardElement = document.getElementById(stack[j]);
             cardElement.className = Deck.cardClass(card);
-            cardElement.style.top = card.position.y + 200 + 'px';
+            cardElement.style.top = card.position.y + 'px';
             cardElement.style.left = card.position.x + 'px';
-            cardElement.style.display = 'block';
-            if(lastCard) {
+            if(card.visible) {
+                cardElement.style.display = 'block';
+            } else {
+                cardElement.style.display = 'none';
+            }
+            if(card.visible) {
                 cardElement.onclick = clickCard;
             }
         }
@@ -179,5 +260,11 @@ const state = {
 
 window.onload = () => {
     runTests();
+    showDebugUI(elements.root, state, _ => {
+        // Add function references that debug functions need.
+        state['functionRefs'] = {
+            renderStacks: renderStacks,
+        };
+    });
     startGame();
 }

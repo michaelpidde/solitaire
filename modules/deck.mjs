@@ -18,7 +18,7 @@ export const initializeCards = (cards, suits) => {
                 face: false,
                 suit: key,
                 number: i,
-                visible: false,
+                visible: true,
                 position: {
                     x: 0,
                     y: 0
