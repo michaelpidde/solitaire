@@ -26,7 +26,7 @@ export const zIndexCollection = (collection) => {
     });
 }
 
-export const updateDrawnCards = (cards, drawnCards, visibleDrawnCards, elements, cardClickEvent) => {
+export const updateDrawnCards = (cards, drawnCards, elements, cardClickEvent) => {
     const container = document.getElementById(elements.board);
     const topOffset = 15;
     const leftOffset = container.clientWidth - 355; // Arbitrary number for alignment
@@ -34,7 +34,7 @@ export const updateDrawnCards = (cards, drawnCards, visibleDrawnCards, elements,
     let cardElement = null;
     let card = null;
     drawnCards.reverse();
-    for(let i = 0; i <= visibleDrawnCards; ++i) {
+    for(let i = 0; i <= 3; ++i) {
         if(drawnCards.length - 1 >= i) {
             card = cards[drawnCards[i]];
             card.position.x = leftOffset - (offsetBetweenCards * i);
@@ -54,14 +54,12 @@ export const updateDrawnCards = (cards, drawnCards, visibleDrawnCards, elements,
                 cardElement.onclick = null;
             }
 
-            if(i == visibleDrawnCards) {
+            if(i == 3) {
                 cardElement.style.display = 'none';
             }
         }
     }
     drawnCards.reverse();
-
-    // Somehow reference active drawn card so it has a click handler that works and the others do not
 }
 
 export const create = (attrs) => {

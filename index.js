@@ -6,11 +6,8 @@ import runTests from './modules/tests.mjs';
 
 const drawCard = () => {
     incrementMoves();
-    if(state.visibleDrawnCards < 3) {
-        ++state.visibleDrawnCards;
-    }
     [state.deck, state.drawnCards] = Deck.draw(state.deck, state.drawnCards);
-    DOM.updateDrawnCards(state.cards, state.drawnCards, state.visibleDrawnCards, elements, clickCard);
+    DOM.updateDrawnCards(state.cards, state.drawnCards, elements, clickCard);
 
     if(state.deck.length == 0) {
         const deckElement = document.getElementById(elements.deck);
@@ -22,8 +19,8 @@ const drawCard = () => {
 const resetDeck = () => {
     let card = null;
     let cardElement = null;
-    state.visibleDrawnCards = 0;
-    for(let i = 0; i <= 2; ++i) {
+    const cardsToHide = (state.drawnCards.length >= 3) ? 3 : state.drawnCards.length;
+    for(let i = 0; i < cardsToHide; ++i) {
         card = state.drawnCards[state.drawnCards.length - (1 + i)];
         cardElement = document.getElementById(card);
         cardElement.style.display = 'none';
@@ -60,8 +57,7 @@ const clickCard = (event) => {
             document.getElementById(state.drawnCards[drawPosition - 1]).onclick = clickCard;
         }
         // Re-render drawn cards
-        --state.visibleDrawnCards;
-        DOM.updateDrawnCards(state.cards, state.drawnCards, state.visibleDrawnCards, elements, clickCard);
+        DOM.updateDrawnCards(state.cards, state.drawnCards, elements, clickCard);
     }
 
     const updateStack = (cardsMoved = 1) => {
@@ -238,7 +234,6 @@ const suits = {
 const state = {
     cards: {},
     drawnCards: [],
-    visibleDrawnCards: 0,
     deck: [],
     piles: {
         staves: [],
