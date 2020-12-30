@@ -1,0 +1,1 @@
+rsync --exclude-from=exclusions.txt -r ./* michael@104.207.138.106:/var/www/solitaire.michaelpidde.com

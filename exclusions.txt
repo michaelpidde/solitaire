@@ -1,0 +1,6 @@
+.gitignore
+deploy.sh
+error.log
+exclusions.txt
+lighttpd.conf
+notes.txt

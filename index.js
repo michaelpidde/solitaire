@@ -49,11 +49,7 @@ const clickCard = (event) => {
     const inStack = (inDraw) ? -1 : scalarFindParentArray(state.stacks, cardElement.id);
     const stackPulledFrom = (inStack > -1) ? state.stacks[inStack] : null;
     const positionInStack = (inStack > -1) ? state.stacks[inStack].indexOf(cardElement.id) : null;
-    // TODO: Do we need this variable? (Yes, probably, so we can change the state
-    // if we need to move a card out of the pile and back into a stack)
     const inPile = (inDraw || inStack > -1) ? false : true;
-
-    let moved = false;
     let cardsMoved = 0;
 
     const updateDrawnCards = () => {
@@ -79,6 +75,33 @@ const clickCard = (event) => {
             nextCard.face = true;
             nextCardElement.className = Deck.cardClass(card);
             nextCardElement.onclick = clickCard;
+        }
+    }
+
+    const moveCards = (stack, stackId) => {
+        if(inStack > -1) {
+            // Pull cards off bottom of stack. If the last card in stack was clicked,
+            // this loop will only run once.
+            for(let c = positionInStack; c < state.stacks[inStack].length; ++c) {
+                stack.push(state.stacks[inStack][c]);
+                ++cardsMoved;
+            }
+        } else if(inDraw || inPile) {
+            // Pull card off deck or off pile
+            stack.push(cardElement.id);
+            ++cardsMoved;
+        }
+
+        DOM.zIndexCollection(stack);
+        renderStacks(stackId);
+        if(inDraw) {
+            updateDrawnCards();
+        }
+        if(inStack > -1) {
+            updateStack(cardsMoved);
+        }
+        if(inPile) {
+            pile.pop();
         }
     }
     
@@ -118,43 +141,12 @@ const clickCard = (event) => {
                 lastCard = state.cards[lastCardId];
                 lastCardSuit = suits[state.cards[lastCardId].suit];
                 if(lastCardSuit != cardColor && lastCard.number == card.number + 1) {
-                    if(inStack > -1) {
-                        // Pull cards off bottom of stack. If the last card in stack was clicked,
-                        // this loop will only run once.
-                        for(let c = positionInStack; c < state.stacks[inStack].length; ++c) {
-                            stack.push(state.stacks[inStack][c]);
-                            ++cardsMoved;
-                        }
-                    } else {
-                        // Pull card off deck
-                        stack.push(cardElement.id);
-                        ++cardsMoved;
-                    }
-
-                    DOM.zIndexCollection(stack);
-                    renderStacks(i);
-                    if(inDraw) {
-                        updateDrawnCards();
-                    }
-                    if(inStack > -1) {
-                        updateStack(cardsMoved);
-                    }
-                    moved = true;
+                    moveCards(stack, i);
                     break;
                 }
             } else {
                 if(card.number == 13) {
-                    stack.push(cardElement.id);
-                    ++cardsMoved;
-                    DOM.zIndexCollection(stack);
-                    renderStacks(i);
-                    if(inDraw) {
-                        updateDrawnCards();
-                    }
-                    if(inStack > -1) {
-                        updateStack();
-                    }
-                    moved = true;
+                    moveCards(stack, i);
                     break;
                 }
             }

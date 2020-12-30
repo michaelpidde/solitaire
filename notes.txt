@@ -9,3 +9,5 @@ Test scenarios:
 -- Multiple cards in same stack promoted to piles or moved to other stacks.
 
 -- Card is moved from pile back to stack - it cannot be re-promoted to pile (probably state problem);
+
+-- Total number of cards that can be in one stack?...
