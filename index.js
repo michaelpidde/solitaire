@@ -36,6 +36,14 @@ const resetDeck = () => {
 const updateDrawnCards = (cardElement) => {
     const drawPosition = state.drawnCards.indexOf(cardElement.id);
     state.drawnCards.splice(drawPosition, 1);
+
+    if(state.drawnCards.length == 0 && state.deck.length == 0) {
+        const deckElement = document.getElementById(elements.deck);
+        deckElement.className = 'end';
+        deckElement.onclick = null;
+        return;
+    }
+
     // Attach click event to prior drawn card (if there was one) so it can be played
     if(drawPosition > 0) {
         document.getElementById(state.drawnCards[drawPosition - 1]).onclick = clickCard;

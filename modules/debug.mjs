@@ -7,6 +7,11 @@ const logState = () => {
     console.log(stateRef);
 }
 
+const oneCardInDeck = () => {
+    console.log('DEBUG: One card in deck');
+    stateRef.deck = ['swords_1'];
+}
+
 const swordsInStacks = () => {
     console.log('DEBUG: Swords suit in stacks');
     stateRef.stacks = [
@@ -85,9 +90,15 @@ const showDebugUI = (root, state, callback) => {
     const logStateButton = document.createElement('button');
     logStateButton.innerHTML = 'Log State';
     logStateButton.onclick = logState;
+
+    const oneCardInDeckButton = document.createElement('button');
+    oneCardInDeckButton.innerHTML = 'Deck 1 card';
+    oneCardInDeckButton.onclick = oneCardInDeck;
     
     debugDiv.appendChild(title);
     debugDiv.appendChild(logStateButton);
+    debugDiv.appendChild(document.createElement('br'));
+    debugDiv.appendChild(oneCardInDeckButton);
     debugDiv.appendChild(document.createElement('br'));
     debugDiv.appendChild(swordsInStacksButton);
     debugDiv.appendChild(document.createElement('br'));

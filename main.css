@@ -29,7 +29,7 @@ div {
 }
 
 /* Card space styles */
-.facecard, .cardback, .pile, .reset {
+.facecard, .cardback, .pile, .reset, .end {
     border-radius: 10px;
     width: 110px;
     height: 150px;
@@ -82,6 +82,10 @@ div {
 .reset {
     border: 1px solid #000;
     background: url("images/reload.svg") center center no-repeat;
+}
+.end {
+    border: 1px solid #000;
+    background: url("images/end.svg") center center no-repeat;
 }
 .card {
     box-shadow: 0 0 2px #666;
