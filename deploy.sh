@@ -1,2 +1,7 @@
-rsync --exclude-from=exclusions.txt -r ./* michael@104.207.138.106:/var/www/solitaire.michaelpidde.com
-ssh michael@104.207.138.106 'cd /var/www/solitaire.michaelpidde.com && rm config.mjs && mv config-prod.mjs config.mjs'
+DIR="/var/tmp/deploy"
+mkdir $DIR
+cp -r ./* $DIR
+rm $DIR/config.mjs
+mv $DIR/config-prod.mjs $DIR/config.mjs
+rsync --exclude-from=$DIR/exclusions.txt -r $DIR/* michael@104.207.138.106:/var/www/solitaire.michaelpidde.com
+rm -rf $DIR
