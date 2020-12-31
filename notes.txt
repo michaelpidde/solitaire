@@ -1,13 +1,1 @@
-Test scenarios:
-
-- First card from deck is moved to drawnCards. It's an Ace, and is moved to pile.
-
-- At least 3 cards are in drawnCards (thus rendered). Two of the cards are moved to piles or stacks in succession.
-
-- All cards in drawnCards played.
-
--- Multiple cards in same stack promoted to piles or moved to other stacks.
-
--- Card is moved from pile back to stack - it cannot be re-promoted to pile (probably state problem);
-
--- Total number of cards that can be in one stack?...
+-- Total number of cards that can be in one stack?... Adjust board dynamically, but not lower than 750pxs
