@@ -75,7 +75,7 @@ const clickCard = (event) => {
     const inDraw = state.drawnCards.indexOf(cardElement.id) > -1;
     const inStack = (inDraw) ? -1 : scalarFindParentArray(state.stacks, cardElement.id);
     const stackPulledFrom = (inStack > -1) ? state.stacks[inStack] : null;
-    const positionInStack = (inStack > -1) ? state.stacks[inStack].indexOf(cardElement.id) : null;
+    const positionInStack = (inStack > -1) ? stackPulledFrom.indexOf(cardElement.id) : null;
     const inPile = (inDraw || inStack > -1) ? false : true;
     let cardsMoved = 0;
 
@@ -85,8 +85,8 @@ const clickCard = (event) => {
         if(inStack > -1) {
             // Pull cards off bottom of stack. If the last card in stack was clicked,
             // this loop will only run once.
-            for(let c = positionInStack; c < state.stacks[inStack].length; ++c) {
-                toStack.push(state.stacks[inStack][c]);
+            for(let c = positionInStack; c < stackPulledFrom.length; ++c) {
+                toStack.push(stackPulledFrom[c]);
                 ++cardsMoved;
             }
         } else if(inDraw || inPile) {
@@ -102,7 +102,7 @@ const clickCard = (event) => {
             updateDrawnCards(cardElement);
         }
         if(inStack > -1) {
-            updateStack(card, cardElement, state.stacks[inStack], cardsMoved);
+            updateStack(card, cardElement, stackPulledFrom, cardsMoved);
         }
         if(inPile) {
             pile.pop();
@@ -114,7 +114,7 @@ const clickCard = (event) => {
     // Move card to pile if possible
     if(pile.length == number - 1) {
         // Check if card is in middle of stack from whence it cannot be promoted
-        if(inStack == -1 || state.stacks[inStack].indexOf(cardElement.id) == state.stacks[inStack].length - 1) {
+        if(inStack == -1 || stackPulledFrom.indexOf(cardElement.id) == stackPulledFrom.length - 1) {
             const pileElement = document.getElementById(elements.pile[suit]);
             card.position.x = pileElement.offsetLeft;
             card.position.y = pileElement.offsetTop;
@@ -129,13 +129,13 @@ const clickCard = (event) => {
                 updateDrawnCards(cardElement);
             }
             if(inStack > -1) {
-                updateStack(card, cardElement, state.stacks[inStack], cardsMoved);
+                updateStack(card, cardElement, stackPulledFrom, cardsMoved);
             }
         }
     }
 
     // Move card to leftmost valid stack if possible, if it hasn't been moved to a pile
-    if(cardsMoved == 0) {
+    if(cardsMoved == 0 && card.face) {
         const cardColor = suits[card.suit];
         let lastCard = null;
         let lastCardIndex = null;
